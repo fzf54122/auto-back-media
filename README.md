@@ -33,17 +33,54 @@
 
 本项目基于 [FastAPI-Template](https://github.com/JiayuXu0/FastAPI-Template) 构建，具备以下企业级特性：
 
-- 🏗️ **清晰的三层架构** - API/Service/Repository 分层设计
-- 🔐 **完整的RBAC权限管理** - 角色、菜单、API权限控制
-- 👤 **用户认证与JWT管理** - 安全的身份验证系统
-- 📝 **审计日志与监控** - 全面的操作追踪
-- 🚀 **Redis缓存优化** - 高性能缓存策略
-- 📁 **安全文件管理** - 文件上传下载与验证
-- 🐳 **Docker容器化** - 开箱即用的部署方案
-- 📖 **自动API文档** - Swagger/ReDoc 文档生成
-- 🔧 **代码质量保证** - Pre-commit hooks + Ruff
-- 📊 **MkDocs文档站** - 完整的项目文档
+- 🏗️ **三层架构设计**  
+  - API 层：`application.app_*` 下的 `apis` 目录，负责路由、请求参数验证、返回格式化  
+  - Service 层：`services` 目录，负责业务逻辑处理、权限校验、操作封装  
+  - Repository / Model 层：`models` 目录，负责数据库表定义与数据访问  
 
+- 🔐 **RBAC 权限管理**  
+  - 基于角色、菜单和 API 的权限控制  
+  - `PermissionControl` 类实现 API 权限验证  
+  - `AgentPermissionControl` 支持智能体资源级权限控制  
+  - 超级管理员拥有所有权限，路径参数支持正则匹配  
+
+- 👤 **用户认证与 JWT 管理**  
+  - `AuthControl` 类支持 JWT 验证  
+  - 支持 access_token / refresh_token 管理  
+  - Redis 黑名单机制支持登出 token 失效  
+
+- 📝 **审计日志与操作追踪**  
+  - `AuditLog` 模型记录操作日志  
+  - 所有关键操作和用户行为均可追溯  
+
+- 🚀 **Redis 缓存优化**  
+  - 使用 `cache_manager` 提供缓存策略  
+  - 可用于 token 黑名单、常用数据缓存等  
+
+- 📁 **文件上传与管理**  
+  - 支持安全文件上传与下载  
+  - 可扩展的文件存储方案  
+
+- 📊 **分页与过滤**  
+  - DRF 风格 GenericViewSet 支持分页、过滤、排序  
+  - 自定义 FilterSet 可灵活扩展  
+
+- 🐳 **Docker 容器化部署**  
+  - 支持 Docker Compose 一键启动服务  
+  - 可轻松部署到生产环境  
+
+- 📖 **自动生成 API 文档**  
+  - Swagger UI 和 ReDoc 文档生成  
+  - 支持 summary、description、example 自动提取  
+
+- 🔧 **代码质量保障**  
+  - Pre-commit hooks + Ruff  
+  - 自动格式化与代码检查  
+
+- 📄 **完整项目文档**  
+  - MkDocs 提供开发文档与接口说明  
+  - 可扩展的文档目录结构  
+  
 ---
 
 ## 🚀 快速开始
@@ -109,23 +146,34 @@
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                        API Layer                            │
-│  (backend/api/v1/) - 路由处理、参数验证、响应格式化               │
+│  (application/*/apis/) - 路由注册、请求处理、参数校验、响应封装 │
+│  基于自定义 GenericViewSet + Mixins 实现 DRF 风格接口           │
 └─────────────────────────────────────────────────────────────┘
                               ↓
 ┌─────────────────────────────────────────────────────────────┐
 │                      Service Layer                          │
-│  (backend/services/) - 业务逻辑、权限校验、数据处理               │
+│  (application/*/services/) - 业务逻辑处理、权限校验、调用模型   │
+│  支持 JWT 验证、RBAC、智能体资源权限                         │
 └─────────────────────────────────────────────────────────────┘
                               ↓
 ┌─────────────────────────────────────────────────────────────┐
-│                   Repository Layer                          │
-│  (backend/repositories/) - 数据访问、CRUD操作、查询优化          │
+│                      Model Layer                             │
+│  (application/*/models/) - 数据模型层，Tortoise ORM 模型定义 │
+│  ManyToMany / ForeignKey / CRUD 操作，支持异步查询           │
 └─────────────────────────────────────────────────────────────┘
                               ↓
 ┌─────────────────────────────────────────────────────────────┐
-│                      Model Layer                            │
-│  (backend/models/) - 数据模型、数据库表结构定义                   │
+│                      Schema Layer                            │
+│  (application/*/schemas/) - Pydantic Schemas，数据验证、序列化│
+│  自动生成 Swagger / ReDoc 文档                                │
 └─────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────┐
+│                     Commons / Utilities                     │
+│  (commons/core/ & commons/drf/) - 通用工具、分页、排序、日志 │
+│  自定义 DRF 风格 GenericViewSet & Mixins，缓存、JWT 等功能   │
+└─────────────────────────────────────────────────────────────┘
+
 ```
 
 ---
@@ -158,22 +206,57 @@ uv run mkdocs serve
 
 ```
 auto-back-media/
-├── backend/                     # 源代码
-│   ├── api/v1/             # API路由层
-│   ├── services/           # 业务逻辑层  
-│   ├── repositories/       # 数据访问层
-│   ├── migrations/         # 数据库迁移
-│   ├── models/             # 数据模型层
-│   ├── schemas/            # Pydantic模式
-│   ├── core/               # 核心功能
-│   ├── utils/              # 工具函数
-│   └── settings/           # 配置管理
-├── tests/                  # 测试文件
-├── docs/                   # 项目文档
-├
-└── logs/                   # 日志文件
+├── aerich_config.py # Tortoise ORM/Aerich 配置
+├── application/ # 核心应用目录
+│ ├── app_base/ # 基础模块
+│ │ ├── apis/ # API 层
+│ │ ├── models/ # 数据模型
+│ │ ├── schemas/ # Pydantic Schemas
+│ │ ├── services/ # Service 层
+│ │ ├── filters.py # 自定义过滤器
+│ │ └── utils.py # 工具函数
+│ ├── app_system/ # 系统模块（用户、权限、登录等）
+│ │ ├── apis/
+│ │ ├── models/
+│ │ ├── schemas/
+│ │ ├── services/
+│ │ └── urls.py # 系统路由注册
+│ ├── app_manage/ # 管理模块（可扩展业务）
+│ │ ├── apis/
+│ │ ├── models/
+│ │ ├── schemas/
+│ │ └── services/
+│ ├── apis.py # 全局 API 汇总
+│ ├── authentication.py # JWT/权限控制
+│ ├── models.py # 全局模型
+│ ├── pagination.py # 分页工具
+│ └── utils.py # 全局工具
+├── commons/ # 公共库
+│ ├── core/ # 核心功能：JWT、缓存、响应、权限等
+│ ├── drf/ # 自定义 DRF 风格 GenericViewSet & Mixins
+│ └── logger/ # 日志处理
+├── conf/ # 配置目录
+│ └── config.py
+├── deploy-docs.sh # 部署文档/脚本
+├── docker-compose.yaml
+├── Dockerfile
+├── logs/ # 日志文件
+├── mkdocs.yml # 项目文档配置
+├── plugins/ # 可扩展插件目录
+├── pyproject.toml
+├── README.md
+├── scripts/ # 辅助脚本
+└── uv.lock # UV 依赖锁文件
 ```
+### 说明
 
+- **API 层 (`apis`)**：负责请求路由、参数校验、返回封装；继承自 `GenericViewSet` 和自定义 mixins，DRF 风格。  
+- **Service 层 (`services`)**：封装业务逻辑、权限验证、调用模型。  
+- **Model 层 (`models`)**：Tortoise ORM 模型，支持 ManyToMany、ForeignKey 关系。  
+- **Schemas 层 (`schemas`)**：Pydantic 数据验证和序列化，支持自动生成文档。  
+- **Commons/drf**：实现了类似 Django REST Framework 的 ViewSet、Create/Update/Delete mixins，支持分页、排序、过滤。  
+- **authentication.py**：集中管理 JWT 验证、权限控制和智能体资源权限。  
+- **Redis & 缓存**：`cache_manager` 提供 token 黑名单及其他缓存服务。  
 ---
 
 ## 🤝 贡献指南
