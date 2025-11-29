@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 
 
 from commons.core.response import AutoResponse
-from commons.core.permission import get_current_username
+from commons.core.permission import DependPermisson, get_current_username
 from commons.drf import CustomViewSet,GenericViewSet
 from application.pagination import LimitOffsetMaxDefaultPagination
 from application.app_system.models import UserModel
@@ -26,6 +26,7 @@ class UserViewSet(CustomViewSet,
     serializer_class = UsersSchemas           # ✅ 列表/详情默认序列化器
     pagination_class = LimitOffsetMaxDefaultPagination
     filter_class = None
+    permissions = [DependPermisson]
 
     def get_serializer_class(self):
         if self.action == 'post':

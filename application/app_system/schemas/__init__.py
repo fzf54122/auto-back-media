@@ -4,6 +4,9 @@ __all__ = [
     'UsersUpdateSchemas',
     'UsersUpdatePasswordSchemas',
     'CredentialsSchema',
+    'SettingsSchemas',
+    'SettingsCreateSchemas',
+    'SettingsUpdateSchemas'
 ]
 
 
@@ -13,3 +16,7 @@ from .UsersSchemas import (UsersSchemas,
                            UsersUpdatePasswordSchemas)
 
 from .LoginSchemas import CredentialsSchema
+
+from .SettingsSchemas import (SettingsSchemas,
+                              SettingsCreateSchemas,
+                              SettingsUpdateSchemas)

@@ -1,5 +1,7 @@
 __all__ = [
-    'ApiService'
+    'ApiService',
+    'RoleService'
 ]
 
 from .ApiService import ApiService
+from .RoleService import RoleService

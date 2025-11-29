@@ -3,10 +3,12 @@ from fastapi import Body, Request
 from pydantic import BaseModel
 from tortoise.queryset import QuerySet
 from tortoise.models import Model
+from tortoise.fields.relational import ManyToManyRelation
 from commons.core.response import AutoResponse  # 你的统一返回封装
 
 
 class DataMixin:
+    
     def handle_data(self,obj) -> dict:
         if not isinstance(obj, dict):
             obj_dict = obj.model_dump(exclude_unset=True)
