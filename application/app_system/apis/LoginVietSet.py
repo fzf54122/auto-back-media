@@ -2,7 +2,9 @@
 from fastapi import APIRouter, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
-from application.app_system.exceptions import TokenExpiredException, TokenInvalidException
+from application.app_system.exceptions import TokenExpiredException, TokenInvalidException, UserNotFoundException
+from application.app_system.schemas import UsersSchemas
+from application.app_system.models import UserModel
 from commons.core.cache import cache_manager
 from commons.core.jwt import create_token_pair, verify_token
 from commons.core.response import AutoResponse
@@ -16,6 +18,7 @@ from commons.drf.decorator import api_meta
 router = APIRouter(tags=['登录接口'])
 service = UserService()
 security = HTTPBearer()
+
 
 
 class LoginViewSet(CreateModelMixin,
@@ -85,7 +88,7 @@ class LoginViewSet(CreateModelMixin,
             raise TokenInvalidException
         
     @router.post('/refresh/', summary='刷新Token')
-    async def refresh_token(self, request: RefreshTokenRequest):
+    async def refresh_token(request: RefreshTokenRequest):
         """
         使用refresh_token刷新获取新的access_token和refresh_token
         """
@@ -101,7 +104,7 @@ class LoginViewSet(CreateModelMixin,
                 raise TokenInvalidException
             
             # 获取用户信息
-            user = await self.model.filter(id=payload.user_id).first()
+            user = await UserModel.filter(id=payload.user_id).first()
             if not user:
                 raise TokenInvalidException
             
@@ -130,3 +133,36 @@ class LoginViewSet(CreateModelMixin,
             if "expired" in str(e).lower():
                 raise TokenExpiredException
             raise TokenInvalidException
+        
+    @router.get('/get_user_info/', summary='获取当前用户信息')
+    async def get_current_user_info(credentials: HTTPAuthorizationCredentials = Depends(security)):
+            """
+            根据当前token获取用户详细信息
+            """
+            token = credentials.credentials
+            if token.lower().startswith("bearer "):
+                token = token[7:]
+                
+            # 检查token是否在黑名单
+            blacklisted = await cache_manager.get(f"blacklist_token:{token}")
+            if blacklisted:
+                raise TokenExpiredException
+            
+        # try:
+            # 验证access token
+            payload = verify_token(token, token_type="access")
+            
+            # 根据用户ID获取用户信息
+            user = await UserModel.filter(id=payload.user_id).first()
+            if not user:
+                raise UserNotFoundException
+                
+            # 将用户信息转换为schema格式返回
+            user_data = UsersSchemas.model_validate(user)
+            
+            return AutoResponse(data=user_data)
+            
+        # except Exception as e:
+        #     if "expired" in str(e).lower():
+        #         raise TokenExpiredException
+        #     raise TokenInvalidException
