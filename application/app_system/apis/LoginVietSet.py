@@ -8,7 +8,7 @@ from commons.core.jwt import create_token_pair, verify_token
 from commons.core.response import AutoResponse
 from commons.drf import (CreateModelMixin,
                          GenericViewSet)
-from application.app_system.schemas.LoginSchemas import CredentialsSchema, JWTOut
+from application.app_system.schemas.LoginSchemas import CredentialsSchema, JWTOut, RefreshTokenRequest, TokenRefreshOut
 from application.app_system.services import UserService
 from commons.drf.decorator import api_meta
 
@@ -82,4 +82,51 @@ class LoginViewSet(CreateModelMixin,
             return AutoResponse(message="退出登录成功")
 
         except Exception as e:
-            raise TokenInvalidException(detail=str(e))
+            raise TokenInvalidException
+        
+    @router.post('/refresh/', summary='刷新Token')
+    async def refresh_token(self, request: RefreshTokenRequest):
+        """
+        使用refresh_token刷新获取新的access_token和refresh_token
+        """
+        refresh_token = request.refresh_token
+        
+        try:
+            # 验证refresh_token
+            payload = verify_token(refresh_token, token_type="refresh")
+            
+            # 检查refresh_token是否在Redis中存在且匹配
+            stored_refresh_token = await cache_manager.get(f"refresh_token:{payload.user_id}")
+            if not stored_refresh_token or stored_refresh_token != refresh_token:
+                raise TokenInvalidException
+            
+            # 获取用户信息
+            user = await self.model.filter(id=payload.user_id).first()
+            if not user:
+                raise TokenInvalidException
+            
+            # 生成新的token对
+            new_access_token, new_refresh_token = create_token_pair(
+                user_id=user.id,
+                username=user.username,
+                is_superuser=user.is_superuser
+            )
+            
+            # 更新Redis中的refresh_token
+            await cache_manager.set(
+                f"refresh_token:{user.id}",
+                new_refresh_token,
+                ttl=7 * 24 * 3600  # 7天
+            )
+            
+            return AutoResponse(TokenRefreshOut(
+                access_token=new_access_token,
+                refresh_token=new_refresh_token,
+                token_type="bearer",
+                expires_in=30 * 60  # 30分钟
+            ))
+            
+        except Exception as e:
+            if "expired" in str(e).lower():
+                raise TokenExpiredException
+            raise TokenInvalidException
