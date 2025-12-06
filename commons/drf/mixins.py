@@ -7,7 +7,6 @@ from tortoise.fields.relational import ManyToManyRelation
 from commons.core.response import AutoResponse  # 你的统一返回封装
 
 
-
 class ListModelMixin:
     action = "list"
 
@@ -53,9 +52,9 @@ class CreateModelMixin:
         - 支持传入 dict 或 Pydantic 模型
         """
         obj = await self.model.create(**self.handle_data(data))
-        serializer = self.get_serializer(obj)
-        return AutoResponse(serializer)
-
+        # serializer = self.get_serializer(obj)
+        # return AutoResponse(serializer)
+        return AutoResponse(msg='创建成功', data={'created_id': obj.id})
 
 class UpdateModelMixin:
     action = "update"
@@ -99,9 +98,11 @@ class DestroyModelMixin:
         obj = await self.get_object()
         await obj.update_from_dict({"is_deleted": True}).save()
         return AutoResponse({"删除成功": f"{obj.uuid}"})
-    
+
+
 class DestroyManyModelMixin:
     action = "destroy_many"
+
     async def destroy_many(self, uuids: list[str] = Body(...)):
         """
         批量删除对象

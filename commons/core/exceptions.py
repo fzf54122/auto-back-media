@@ -93,3 +93,12 @@ async def GlobalExceptionHandle(request: Request, exc: Exception):
             "path": request.url.path
         },
     )
+
+
+class ObjectExistException(AutoBaseException):
+    code = 20010
+    detail = '对象已存在'
+
+class ObjectNotFoundException(AutoBaseException):
+    code = 20020
+    detail = '没有找到对应对象'

@@ -20,7 +20,7 @@ from .APISchemas import (APISchemas,
 
 from .RoleSchemas import (RoleSchemas,
                           RoleCreateSchemas,
-                          RoleUpdateSchemas)
+                          RoleUpdateSchemas,)
 
 from .MunuSchemas import (MenuSchemas,
                           MenuSchemasCreate,

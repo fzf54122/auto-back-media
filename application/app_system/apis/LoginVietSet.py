@@ -24,7 +24,7 @@ security = HTTPBearer()
 class LoginViewSet(CreateModelMixin,
                    GenericViewSet):
     router = router
-    prefix = "/login"
+    prefix = "/auth/login"
 
     @staticmethod
     @api_meta(summary="用户登录")
@@ -59,7 +59,7 @@ class LoginViewSet(CreateModelMixin,
             user_uuid=user.uuid
         ))
     
-    @router.post('/logout/', summary='用户退出')
+    @router.post('/auth/logout/', summary='用户退出')
     async def logout(self, request: Request,credentials: HTTPAuthorizationCredentials = Depends(security)):
         """用户退出登录"""
         token = credentials.credentials
@@ -91,7 +91,7 @@ class LoginViewSet(CreateModelMixin,
 
     @staticmethod
     @apply_rate_limit(rate="5/minute")
-    @router.post('/refresh/', summary='刷新Token')
+    @router.post('/auth/refresh/', summary='刷新Token')
     async def refresh_token(request: Request, refresh_token_request: RefreshTokenRequest):
         """
         使用refresh_token刷新获取新的access_token和refresh_token

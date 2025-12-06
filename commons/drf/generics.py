@@ -1,12 +1,10 @@
-from typing import Optional,Any
+from typing import Optional, Any
 
-from fastapi import APIRouter,Request
+from fastapi import APIRouter, Request
 from tortoise.expressions import Q
 from tortoise.queryset import QuerySet
 from tortoise.models import Model
 from pydantic import BaseModel
-
-
 
 
 class GenericViewSet:
@@ -18,8 +16,8 @@ class GenericViewSet:
     model: type[Model]
     action: Optional[str] = None
 
-    pagination_class = None            # 分页器
-    filter_class = None                # 过滤器
+    pagination_class = None  # 分页器
+    filter_class = None  # 过滤器
     serializer_class: type[BaseModel]  # 序列化器
     _request = None
 
@@ -77,7 +75,6 @@ class GenericViewSet:
                 dependencies=cls.permissions,
             )
 
-
     def get_serializer_class(self):
         """根据 action 返回对应 Pydantic 类"""
         return getattr(self, "serializer_class")
@@ -88,35 +85,34 @@ class GenericViewSet:
         if many:
             return [cls.model_validate(obj) for obj in instance]
         return cls.model_validate(instance)
-    
-    def get_queryset(self, request: Request) -> QuerySet:
+
+    def get_queryset(self, request: Request=None) -> QuerySet:
         """
         返回基础 QuerySet，可被 filter_queryset 进一步过滤
         """
         if not self.model:
             raise ValueError("model must be defined")
         # 基础 QuerySet
-        
-        return self.model.all(Q(is_deleted=False))
 
-    def filter_queryset(self, request: Request, qs):
+        return self.model.filter(Q(is_deleted=False))
+
+    def filter_queryset(self, request: Request=None, qs=None) -> QuerySet:
         return qs
 
-
-    async def get_object(self ):
+    async def get_object(self):
         obj_id = self._request.path_params.get(self.loop_uuid_field or "pk")
-        obj = await self.model.get(**{self.loop_uuid_field or "id": obj_id })
+        obj = await self.model.get(**{self.loop_uuid_field or "id": obj_id})
 
         if not obj:
             raise Exception(f"{self.model.__name__} object not found")
         return obj
 
-    def get_pagination(self, request: Request):
+    def get_pagination(self, request: Request=None):
         page = int(request.query_params.get("page", 1))
         page_size = int(request.query_params.get("page_size", 20))
         return page, page_size
 
-    def handle_data(self,obj) -> dict:
+    def handle_data(self, obj) -> dict:
         if not isinstance(obj, dict):
             obj_dict = obj.model_dump(exclude_unset=True)
         else:
