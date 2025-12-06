@@ -1,5 +1,4 @@
-from fastapi import APIRouter,Request
-
+from fastapi import APIRouter, Request, Body
 
 from commons.core.response import AutoResponse
 from commons.core.permission import DependPermisson
@@ -58,7 +57,7 @@ class MenuViewSet(CustomViewSet,
 
         return root_menus
 
-    async def get(self, request: Request):
+    async def get(self,request: Request):
         """
         获取菜单列表，构建菜单树结构
         """
@@ -99,3 +98,29 @@ class MenuViewSet(CustomViewSet,
         # 序列化并返回
         serializer = self.get_serializer(menu_tree, many=True)
         return AutoResponse(serializer)
+
+    async def retrieve(self, request: Request):
+        """
+        获取菜单详情
+        """
+        self._request = request
+        obj = await self.get_object()
+        serializer = self.get_serializer(obj)
+        return AutoResponse(serializer)
+
+    async def post(self,request: Request, data=Body(...)):
+        """
+        创建角色
+        """
+        obj = await self.model.create(**self.handle_data(data))
+
+        return AutoResponse(msg='创建成功', data={"id": obj.id})
+
+    async def update(self,request: Request, data=Body(...)):
+        """
+        更新角色
+        """
+        self._request = request
+        obj = await self.get_object()
+        await obj.update_from_dict(self.handle_data(data)).save()
+        return AutoResponse(msg='更新成功', data={"id": obj.id})

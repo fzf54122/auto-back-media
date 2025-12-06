@@ -1,7 +1,7 @@
 
 import asyncio
-import datetime
 from uuid import uuid4
+from datetime import datetime
 from tortoise import fields, models
 from conf import settings
 # 数据库表名前缀
@@ -45,6 +45,7 @@ class CoreModel(models.Model):
                             db_index=True)
 
     async def to_dict(self, m2m: bool = False, exclude_fields: list[str] | None = None):
+
         if exclude_fields is None:
             exclude_fields = []
 
@@ -83,6 +84,39 @@ class CoreModel(models.Model):
             formatted_values.append(formatted_value)
 
         return field, formatted_values
+
+    async def from_dict(self, data: dict, exclude_fields=None):
+        if exclude_fields is None:
+            exclude_fields = []
+
+        update_data = {}
+        m2m_data = {}
+
+        # 普通字段和 M2M 区分
+        for field, value in data.items():
+            if field in exclude_fields:
+                continue
+            if field in self._meta.db_fields:
+                update_data[field] = value
+            elif field in self._meta.m2m_fields:
+                m2m_data[field] = value
+
+        # 更新普通字段
+        if update_data:
+            await self.update_from_dict(update_data)
+            await self.save()
+
+        # 更新 M2M 字段
+        for field in data:
+            if field in self._meta.m2m_fields and field not in exclude_fields:
+                manager = getattr(self, field)
+                await manager.clear()
+                m2m_model = self._meta.fields_map[field].related_model
+                ids = data[field]
+                instances = await m2m_model.filter(id__in=ids)
+                await manager.add(*instances)
+
+        return self
 
     class Meta:
         abstract = True

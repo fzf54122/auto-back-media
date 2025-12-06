@@ -6,19 +6,21 @@ from commons.core.schemas import AutoSchemas
 
 
 class MenuSchemas(AutoSchemas):
-    uuid: UUID
-    name: str
-    path: str
-    remark: dict | None
-    menu_type: MenuType | None
-    icon: str | None
-    order: int
-    parent_id: int
-    is_hidden: bool
-    component: str
-    keepalive: bool
-    redirect: str | None
-    children: list["MenuSchemas"] | None
+    id: int = None
+    uuid: UUID = None
+    name: str = None
+    path: str = "/menu"
+    ordering: list[str] = None
+    remark: dict | None = None
+    menu_type: MenuType | None = None
+    icon: str | None = None
+    order: int = 0
+    parent_id: int = 0
+    is_hidden: bool = False
+    component: str = None
+    keepalive: bool = False
+    redirect: str | None = None
+    children: list["MenuSchemas"] | None = None
 
 class MenuSchemasCreate(MenuSchemas):
     menu_type: MenuType = Field(default=MenuType.CATALOG.value)

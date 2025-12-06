@@ -45,15 +45,17 @@ class RoleViewSet(CustomViewSet,
         if self.filter_class:
             filter_set = self.filter_class(qs, request.query_params)
             qs = filter_set.qs()
+        objs = await qs
 
-
-        qs = await service.handle_get_list(qs=qs)
+        result = []
+        for obj in objs:
+            obj_dict = await obj.to_dict(m2m=True)  # m2m=True 可以序列化 ManyToManyField
+            result.append(obj_dict)
         # 使用分页器
         if self.pagination_class:
+            return AutoResponse(await self.pagination_class.paginate(request, result, self.get_serializer))
 
-            return AutoResponse(await self.pagination_class.paginate(request, qs, self.get_serializer))
-
-        return AutoResponse(qs)
+        return AutoResponse(result)
 
     async def post(self,request: Request, data=Body(...)):
         """
@@ -69,5 +71,5 @@ class RoleViewSet(CustomViewSet,
         """
         self._request = request
         obj = await self.get_object()
-        await obj.update_from_dict(self.handle_data(data)).save()
-        return AutoResponse(msg='更新成功', data={"id": obj.id})
+        await obj.from_dict(self.handle_data(data))
+        return AutoResponse(msg="更新成功", data={"id": obj.id})
