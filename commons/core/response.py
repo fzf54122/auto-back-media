@@ -12,10 +12,10 @@ class AutoResponse(JSONResponse):
     """
     def __init__(
         self,
-        data: Any = None,
+        data: Any | None = None,
         code: int = 200,
         status: str = "success",
-        message: Optional[str] = None,
+        msg: str | None = "OK",
         total: Optional[int] = None,
         page: Optional[int] = None,
         page_size: Optional[int] = None,

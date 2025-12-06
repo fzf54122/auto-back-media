@@ -7,64 +7,8 @@ from tortoise.fields.relational import ManyToManyRelation
 from commons.core.response import AutoResponse  # 你的统一返回封装
 
 
-class DataMixin:
-    
-    def handle_data(self,obj) -> dict:
-        if not isinstance(obj, dict):
-            obj_dict = obj.model_dump(exclude_unset=True)
-        else:
-            obj_dict = obj
-        return obj_dict
 
-
-class CRUDMixinBase(DataMixin):
-    model: type[Model]
-    loop_uuid_field: Optional[str] = None
-    action: Optional[str] = None
-
-    pagination_class = None            # 分页器
-    filter_class = None                # 过滤器
-    serializer_class: type[BaseModel]  # 序列化器
-    _request = None
-
-    def get_serializer_class(self):
-        """根据 action 返回对应 Pydantic 类"""
-        return getattr(self, "serializer_class")
-
-    def get_serializer(self, instance: Any, many: bool = False):
-        """把 ORM 对象转换为 Pydantic 实例"""
-        cls = self.get_serializer_class()
-        if many:
-            return [cls.model_validate(obj) for obj in instance]
-        return cls.model_validate(instance)
-    
-    def get_queryset(self, request: Request) -> QuerySet:
-        """
-        返回基础 QuerySet，可被 filter_queryset 进一步过滤
-        """
-        if not self.model:
-            raise ValueError("model must be defined")
-        # 基础 QuerySet
-        return self.model.all()
-
-    def filter_queryset(self, request: Request, qs):
-        return qs
-
-
-    async def get_object(self ):
-        obj_id = self._request.path_params.get(self.loop_uuid_field or "pk")
-        obj = await self.model.get(**{self.loop_uuid_field or "id": obj_id })
-
-        if not obj:
-            raise Exception(f"{self.model.__name__} object not found")
-        return obj
-
-    def get_pagination(self, request: Request):
-        page = int(request.query_params.get("page", 1))
-        page_size = int(request.query_params.get("page_size", 20))
-        return page, page_size
-
-class ListModelMixin(CRUDMixinBase):
+class ListModelMixin:
     action = "list"
 
     async def get(self, request: Request):
@@ -87,7 +31,7 @@ class ListModelMixin(CRUDMixinBase):
         return AutoResponse(serializer)
 
 
-class RetrieveModelMixin(CRUDMixinBase):
+class RetrieveModelMixin:
     action = "retrieve"
 
     async def retrieve(self, request: Request):
@@ -100,7 +44,7 @@ class RetrieveModelMixin(CRUDMixinBase):
         return AutoResponse(self.get_serializer(obj).data)
 
 
-class CreateModelMixin(CRUDMixinBase):
+class CreateModelMixin:
     action = "create"
 
     async def post(self, request: Request, data=Body(...)):
@@ -113,7 +57,7 @@ class CreateModelMixin(CRUDMixinBase):
         return AutoResponse(serializer)
 
 
-class UpdateModelMixin(CRUDMixinBase):
+class UpdateModelMixin:
     action = "update"
 
     async def update(self, request: Request, data=Body(...)):
@@ -128,7 +72,7 @@ class UpdateModelMixin(CRUDMixinBase):
         return AutoResponse(serializer)
 
 
-class PartialUpdateModelMixin(CRUDMixinBase):
+class PartialUpdateModelMixin:
     action = "partial_update"
 
     async def partial_update(self, request: Request, data=Body(...)):
@@ -143,7 +87,7 @@ class PartialUpdateModelMixin(CRUDMixinBase):
         return AutoResponse(serializer)
 
 
-class DestroyModelMixin(CRUDMixinBase):
+class DestroyModelMixin:
     action = "destroy"
 
     async def destroy(self, request: Request):
@@ -156,7 +100,7 @@ class DestroyModelMixin(CRUDMixinBase):
         await obj.update_from_dict({"is_deleted": True}).save()
         return AutoResponse({"删除成功": f"{obj.uuid}"})
     
-class DestroyManyModelMixin(CRUDMixinBase):
+class DestroyManyModelMixin:
     action = "destroy_many"
     async def destroy_many(self, uuids: list[str] = Body(...)):
         """

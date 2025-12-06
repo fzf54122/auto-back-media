@@ -6,5 +6,5 @@ __all__ = [
 
 from .User import UserModel
 
-from .AuditLog import AuditLogModel
+from ...app_base.models.AuditLog import AuditLogModel
 from .Settings import SettingsModel

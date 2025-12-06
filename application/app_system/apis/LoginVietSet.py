@@ -1,5 +1,5 @@
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 from application.app_system.exceptions import TokenExpiredException, TokenInvalidException, UserNotFoundException
@@ -13,7 +13,7 @@ from commons.drf import (CreateModelMixin,
 from application.app_system.schemas.LoginSchemas import CredentialsSchema, JWTOut, RefreshTokenRequest, TokenRefreshOut
 from application.app_system.services import UserService
 from commons.drf.decorator import api_meta
-
+from commons.core.limit import apply_rate_limit
 
 router = APIRouter(tags=['登录接口'])
 service = UserService()
@@ -27,7 +27,8 @@ class LoginViewSet(CreateModelMixin,
     prefix = "/login"
     
     @api_meta(summary="用户登录")
-    async def post(self, credentials: CredentialsSchema):
+    @apply_rate_limit(rate="5/minute")
+    async def post(self, request: Request,credentials: CredentialsSchema):
         """
         用户登录
         """
@@ -88,6 +89,7 @@ class LoginViewSet(CreateModelMixin,
             raise TokenInvalidException
         
     @router.post('/refresh/', summary='刷新Token')
+    @apply_rate_limit(rate="5/minute")
     async def refresh_token(request: RefreshTokenRequest):
         """
         使用refresh_token刷新获取新的access_token和refresh_token
@@ -148,21 +150,21 @@ class LoginViewSet(CreateModelMixin,
             if blacklisted:
                 raise TokenExpiredException
             
-        # try:
-            # 验证access token
-            payload = verify_token(token, token_type="access")
-            
-            # 根据用户ID获取用户信息
-            user = await UserModel.filter(id=payload.user_id).first()
-            if not user:
-                raise UserNotFoundException
+            try:
+                # 验证access token
+                payload = verify_token(token, token_type="access")
                 
-            # 将用户信息转换为schema格式返回
-            user_data = UsersSchemas.model_validate(user)
-            
-            return AutoResponse(data=user_data)
-            
-        # except Exception as e:
-        #     if "expired" in str(e).lower():
-        #         raise TokenExpiredException
-        #     raise TokenInvalidException
+                # 根据用户ID获取用户信息
+                user = await UserModel.filter(id=payload.user_id).first()
+                if not user:
+                    raise UserNotFoundException
+                    
+                # 将用户信息转换为schema格式返回
+                user_data = UsersSchemas.model_validate(user)
+                
+                return AutoResponse(data=user_data)
+                
+            except Exception as e:
+                if "expired" in str(e).lower():
+                    raise TokenExpiredException
+                raise TokenInvalidException
