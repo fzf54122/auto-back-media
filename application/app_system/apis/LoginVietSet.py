@@ -25,16 +25,16 @@ class LoginViewSet(CreateModelMixin,
                    GenericViewSet):
     router = router
     prefix = "/login"
-    
+
+    @staticmethod
     @api_meta(summary="用户登录")
     @apply_rate_limit(rate="5/minute")
-    async def post(self, request: Request,credentials: CredentialsSchema):
+    async def post( request: Request,credentials: CredentialsSchema):
         """
         用户登录
         """
         # 验证用户凭据
         user = await service.authenticate(credentials)
-
         # 更新最后登录时间
         await service.update_last_login(user.id)
 
@@ -60,7 +60,7 @@ class LoginViewSet(CreateModelMixin,
         ))
     
     @router.post('/logout/', summary='用户退出')
-    async def logout(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    async def logout(self, request: Request,credentials: HTTPAuthorizationCredentials = Depends(security)):
         """用户退出登录"""
         token = credentials.credentials
         if token.lower().startswith("bearer "):
@@ -88,13 +88,15 @@ class LoginViewSet(CreateModelMixin,
         except Exception as e:
             raise TokenInvalidException
         
-    @router.post('/refresh/', summary='刷新Token')
+
+    @staticmethod
     @apply_rate_limit(rate="5/minute")
-    async def refresh_token(request: RefreshTokenRequest):
+    @router.post('/refresh/', summary='刷新Token')
+    async def refresh_token(request: Request, refresh_token_request: RefreshTokenRequest):
         """
         使用refresh_token刷新获取新的access_token和refresh_token
         """
-        refresh_token = request.refresh_token
+        refresh_token = refresh_token_request.refresh_token
         
         try:
             # 验证refresh_token
@@ -135,7 +137,8 @@ class LoginViewSet(CreateModelMixin,
             if "expired" in str(e).lower():
                 raise TokenExpiredException
             raise TokenInvalidException
-        
+
+    @staticmethod
     @router.get('/get_user_info/', summary='获取当前用户信息')
     async def get_current_user_info(credentials: HTTPAuthorizationCredentials = Depends(security)):
             """

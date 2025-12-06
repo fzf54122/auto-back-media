@@ -31,7 +31,7 @@ from .middlewares import (
     SecurityHeadersMiddleware,
 )
 from .cache import cache_manager
-
+from .limit import limiter
 
 
 from application.apis import api_router
@@ -77,7 +77,7 @@ def register_exceptions(app: FastAPI):
     app.add_exception_handler(RequestValidationError, RequestValidationHandle)
     app.add_exception_handler(ResponseValidationError, ResponseValidationHandle)
     # 注册限流异常处理
-    # app.state.limiter = limiter
+    app.state.limiter = limiter
     app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
     app.add_exception_handler(Exception, GlobalExceptionHandle)
 
