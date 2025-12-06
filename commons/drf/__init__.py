@@ -6,12 +6,12 @@ __all__ = [
     'PartialUpdateModelMixin',
     'DestroyModelMixin',
     'DestroyManyModelMixin',
-    'GenericViewSet'
+    'api_meta',
     'CustomViewSet',
-    'api_meta'
+    'GenericViewSet'
 ]
-from .decorator import api_meta
 from .generics import GenericViewSet
+from .decorator import api_meta
 from .mixins import (
                                 ListModelMixin,
                                 RetrieveModelMixin,

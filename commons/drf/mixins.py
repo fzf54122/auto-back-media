@@ -1,5 +1,5 @@
 from typing import Any, Optional
-from fastapi import Body, Request
+from fastapi import Body, Request, Depends
 from pydantic import BaseModel
 from tortoise.queryset import QuerySet
 from tortoise.models import Model
@@ -10,7 +10,7 @@ from commons.core.response import AutoResponse  # 你的统一返回封装
 class ListModelMixin:
     action = "list"
 
-    async def get(self, request: Request):
+    async def get(self, request: Request=None):
         """
         获取对象列表
         - 支持分页
@@ -52,9 +52,8 @@ class CreateModelMixin:
         - 支持传入 dict 或 Pydantic 模型
         """
         obj = await self.model.create(**self.handle_data(data))
-        # serializer = self.get_serializer(obj)
-        # return AutoResponse(serializer)
-        return AutoResponse(msg='创建成功', data={'created_id': obj.id})
+        serializer = self.get_serializer(obj)
+        return AutoResponse(serializer)
 
 class UpdateModelMixin:
     action = "update"

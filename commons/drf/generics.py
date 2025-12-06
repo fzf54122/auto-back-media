@@ -94,9 +94,12 @@ class GenericViewSet:
             raise ValueError("model must be defined")
         # 基础 QuerySet
 
-        return self.model.filter(Q(is_deleted=False))
+        return self.model.all().filter(Q(is_deleted=False))
 
     def filter_queryset(self, request: Request=None, qs=None) -> QuerySet:
+        if self.filter_class:
+            filter_set = self.filter_class(qs, request.query_params)
+            qs = filter_set.qs()
         return qs
 
     async def get_object(self):
