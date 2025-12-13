@@ -9,46 +9,57 @@ import asyncio
 from uuid import uuid4
 from datetime import datetime
 from tortoise import fields, models
+from tortoise.queryset import QuerySet
+
 from conf import settings
 # 数据库表名前缀
 table_prefix = getattr(settings, 'TABLE_PREFIX', '')
-
 
 
 class CoreModel(models.Model):
     """核心标准抽象模型，可直接继承使用"""
 
     id = fields.BigIntField(
-                            primary_key=True, 
+                            primary_key=True,
                             db_index=True,
                             auto_increment=True)
     uuid = fields.UUIDField(
                             default=uuid4,
-                            unique=True, 
+                            unique=True,
                             db_index=True)
-    
+
     description = fields.CharField(
                             max_length=300,
                             default="",
                             description="描述")
 
     created_at = fields.DatetimeField(
-                            auto_now_add=True, 
+                            auto_now_add=True,
                             description="创建时间",
                             db_index=True)
     updated_at = fields.DatetimeField(
                             auto_now=True,
                             description="更新时间",
                             db_index=True)
-    
+
     is_active = fields.BooleanField(
-                            default=True, 
+                            default=True,
                             description="是否启用",
                             db_index=True)
     is_deleted = fields.BooleanField(
-                            default=False, 
+                            default=False,
                             description="是否删除",
                             db_index=True)
+
+    @classmethod
+    def all(cls):
+        """只查询未删除的数据"""
+        return cls.filter(is_deleted=False)
+
+    @classmethod
+    def all_with_deleted(cls):
+        """查询所有数据，包括软删除"""
+        return cls.all()
 
     async def to_dict(self, m2m: bool = False, exclude_fields: list[str] | None = None):
 
@@ -61,6 +72,9 @@ class CoreModel(models.Model):
                 value = getattr(self, field)
                 if isinstance(value, datetime):
                     value = value.strftime(settings.DATETIME_FORMAT)
+                # 将UUID对象转换为字符串
+                elif hasattr(value, 'hex'):
+                    value = str(value)
                 d[field] = value
 
         if m2m:
@@ -159,4 +173,3 @@ class CoreModel(models.Model):
         else:
             # 真正删除
             await super().delete(*args, **kwargs)
-

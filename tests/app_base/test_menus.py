@@ -3,155 +3,133 @@
 # @Author  : fzf54122
 # @FileName: test_menus.py
 # @Email: fzf54122@163.com
-# @Description: 描述文件功能
+# @Description: 菜单管理视图集测试
 
 import pytest
-from fastapi.testclient import TestClient
-from unittest.mock import MagicMock, patch
-from uuid import UUID
+from httpx import AsyncClient
+from tortoise import Tortoise
 
-@patch("application.app_base.apis.MenuViewSet.model")
-@patch("commons.core.permission.DependPermisson")
-def test_get_menu_tree(mock_permission, mock_model, client: TestClient):
-    """测试获取菜单树结构"""
-    # 模拟菜单数据
-    mock_menu1 = MagicMock()
-    mock_menu1.id = 1
-    mock_menu1.uuid = UUID("12345678-1234-5678-1234-567812345678")
-    mock_menu1.name = "首页"
-    mock_menu1.path = "/dashboard"
-    mock_menu1.remark = "首页菜单"
-    mock_menu1.menu_type = "C"
-    mock_menu1.icon = "home"
-    mock_menu1.order = 1
-    mock_menu1.parent_id = 0
-    mock_menu1.is_hidden = False
-    mock_menu1.component = "Dashboard"
-    mock_menu1.keepalive = True
-    mock_menu1.redirect = None
-    mock_menu1.is_deleted = False
-    
-    mock_menu2 = MagicMock()
-    mock_menu2.id = 2
-    mock_menu2.uuid = UUID("87654321-4321-8765-4321-567812345678")
-    mock_menu2.name = "用户管理"
-    mock_menu2.path = "/users"
-    mock_menu2.remark = "用户管理菜单"
-    mock_menu2.menu_type = "C"
-    mock_menu2.icon = "user"
-    mock_menu2.order = 2
-    mock_menu2.parent_id = 1
-    mock_menu2.is_hidden = False
-    mock_menu2.component = "Users"
-    mock_menu2.keepalive = True
-    mock_menu2.redirect = None
-    mock_menu2.is_deleted = False
-    
-    # 设置模拟返回
-    mock_queryset = MagicMock()
-    mock_queryset.order_by.return_value = [mock_menu1, mock_menu2]
-    mock_model.filter.return_value = mock_queryset
-    
-    # 发送请求
-    response = client.get("/api/menus/")
-    
-    # 验证响应
-    assert response.status_code == 200
-    data = response.json()
-    assert data["code"] == 0
-    assert len(data["data"]) > 0
-    
-    # 验证方法调用
-    mock_model.filter.assert_called_once_with(is_deleted=False)
-    mock_queryset.order_by.assert_called_once()
+from tests.mock_data import mock_menus
+from application.app_base.models import MenuModel
 
-@patch("application.app_base.apis.MenuViewSet.get_object")
-@patch("commons.core.permission.DependPermisson")
-def test_get_menu_detail(mock_permission, mock_get_object, client: TestClient):
-    """测试获取菜单详情"""
-    # 模拟菜单数据
-    mock_menu = MagicMock()
-    mock_menu.uuid = UUID("12345678-1234-5678-1234-567812345678")
-    mock_menu.name = "首页"
-    mock_menu.path = "/dashboard"
-    
-    # 设置模拟返回
-    mock_get_object.return_value = mock_menu
-    
-    # 发送请求
-    response = client.get("/api/menus/12345678-1234-5678-1234-567812345678/")
-    
-    # 验证响应
-    assert response.status_code == 200
-    data = response.json()
-    assert data["code"] == 0
-    
-    # 验证方法调用
-    mock_get_object.assert_called_once()
 
-@patch("application.app_base.apis.MenuViewSet.model")
-@patch("application.app_base.apis.MenuViewSet.handle_data")
-@patch("commons.core.permission.DependPermisson")
-def test_create_menu(mock_permission, mock_handle_data, mock_model, client: TestClient):
-    """测试创建菜单"""
-    # 模拟创建的菜单
-    mock_created_menu = MagicMock()
-    mock_created_menu.id = 1
-    mock_model.create.return_value = mock_created_menu
-    mock_handle_data.return_value = {"name": "新菜单", "path": "/new-menu"}
-    
-    # 创建菜单请求数据
-    create_data = {
-        "name": "新菜单",
-        "path": "/new-menu",
-        "menu_type": "C",
-        "icon": "new",
-        "order": 3,
-        "parent_id": 0,
-        "component": "NewComponent"
-    }
-    
-    # 发送请求
-    response = client.post("/api/menus/", json=create_data)
-    
-    # 验证响应
-    assert response.status_code == 200
-    data = response.json()
-    assert data["code"] == 0
-    assert data["message"] == "创建成功"
-    
-    # 验证方法调用
-    mock_handle_data.assert_called_once_with(create_data)
-    mock_model.create.assert_called_once_with(**mock_handle_data.return_value)
+class TestMenuViewSet:
+    """菜单管理视图集测试类"""
 
-@patch("application.app_base.apis.MenuViewSet.get_object")
-@patch("application.app_base.apis.MenuViewSet.handle_data")
-@patch("commons.core.permission.DependPermisson")
-def test_update_menu(mock_permission, mock_handle_data, mock_get_object, client: TestClient):
-    """测试更新菜单"""
-    # 模拟菜单数据
-    mock_menu = MagicMock()
-    mock_menu.update_from_dict.return_value = True
-    mock_get_object.return_value = mock_menu
-    mock_handle_data.return_value = {"name": "更新菜单", "path": "/updated-menu"}
-    
-    # 更新菜单请求数据
-    update_data = {
-        "name": "更新菜单",
-        "path": "/updated-menu",
-        "icon": "updated"
-    }
-    
-    # 发送请求
-    response = client.put("/api/menus/12345678-1234-5678-1234-567812345678/", json=update_data)
-    
-    # 验证响应
-    assert response.status_code == 200
-    data = response.json()
-    assert data["code"] == 0
-    assert data["message"] == "更新成功"
-    
-    # 验证方法调用
-    mock_get_object.assert_called_once()
-    mock_handle_data.assert_called_once_with(update_data)
-    mock_menu.update_from_dict.assert_called_once_with(**mock_handle_data.return_value)
+    @pytest.fixture(autouse=True)
+    async def setup(self, clean_database):
+        """测试前置条件：清理数据库并初始化测试数据"""
+        # clean_database已经是异步fixture，不需要await
+        
+        # 批量创建测试菜单，只保留必要字段
+        for menu_data in mock_menus:
+            # 只保留必要的字段，移除自动生成的字段，并添加必填的component字段
+            # 将menu_type从字符串"1"或"2"转换为正确的枚举值
+            menu_type = "catalog" if menu_data["menu_type"] == "1" else "menu"
+            menu_create_data = {
+                "name": menu_data["name"],
+                "path": menu_data["path"],
+                "menu_type": menu_type,
+                "parent_id": menu_data["parent_id"],
+                "order": menu_data["order"],
+                "icon": menu_data["icon"],
+                "component": "Layout"
+            }
+            await MenuModel.create(**menu_create_data)
+
+    @pytest.mark.asyncio
+    async def test_get_menu_list(self, async_client: AsyncClient, auth_headers):
+        """测试获取菜单列表"""
+        response = await async_client.get(
+            "/api/menus/list/",
+            headers=auth_headers
+        )
+        
+        assert response.status_code == 200
+        data = response.json()
+        assert data["code"] == 200
+        assert len(data["data"]) >= 1
+
+    @pytest.mark.asyncio
+    async def test_create_menu(self, async_client: AsyncClient, auth_headers):
+        """测试创建菜单"""
+        new_menu = {
+            "name": "测试菜单",
+            "path": "/test",
+            "menu_type": "catalog",
+            "parent_id": 0,
+            "order": 4,
+            "icon": "test",
+            "component": "Layout"
+        }
+        
+        response = await async_client.post(
+            "/api/menus/create/",
+            json=new_menu,
+            headers=auth_headers
+        )
+        
+        assert response.status_code == 200
+        data = response.json()
+        assert data["code"] == 200
+        assert data["data"]["name"] == new_menu["name"]
+
+    @pytest.mark.asyncio
+    async def test_get_menu_detail(self, async_client: AsyncClient, auth_headers):
+        """测试获取菜单详情"""
+        # 获取第一个菜单的ID
+        menu = await MenuModel.all().first()
+        
+        response = await async_client.get(
+            f"/api/menus/{menu.uuid}/",
+            headers=auth_headers
+        )
+        
+        assert response.status_code == 200
+        data = response.json()
+        assert data["code"] == 200
+        assert data["data"]["uuid"] == str(menu.uuid)
+
+    @pytest.mark.asyncio
+    async def test_update_menu(self, async_client: AsyncClient, auth_headers):
+        """测试更新菜单"""
+        # 获取第一个菜单的ID
+        menu = await MenuModel.all().first()
+        
+        update_data = {
+            "name": "更新后的菜单名称",
+            "path": "/updated",
+            "menu_type": "menu",
+            "order": 2,
+            "icon": "updated"
+        }
+        
+        response = await async_client.put(
+            f"/api/menus/{menu.uuid}/",
+            json=update_data,
+            headers=auth_headers
+        )
+        
+        assert response.status_code == 200
+        data = response.json()
+        assert data["code"] == 200
+        assert data["data"]["name"] == update_data["name"]
+
+    @pytest.mark.asyncio
+    async def test_delete_menu(self, async_client: AsyncClient, auth_headers):
+        """测试删除菜单"""
+        # 获取第一个菜单的ID
+        menu = await MenuModel.all().first()
+        
+        response = await async_client.delete(
+            f"/api/menus/{menu.uuid}/",
+            headers=auth_headers
+        )
+        
+        assert response.status_code == 200
+        data = response.json()
+        assert data["code"] == 200
+        
+        # 验证菜单已被删除
+        deleted_menu = await MenuModel.all().filter(uuid=menu.uuid).first()
+        assert deleted_menu is None

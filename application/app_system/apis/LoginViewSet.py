@@ -89,6 +89,29 @@ class LoginViewSet:
 
         except Exception as e:
             raise TokenInvalidException
+
+    @staticmethod
+    @router.post("/auth/access_token/", summary="获取token")
+    @apply_rate_limit()
+    async def login_access_token(request: Request, credentials: CredentialsSerializers):
+        user = await service.authenticate(credentials)
+
+        # 更新最后登录时间
+        await service.update_last_login(user.id)
+
+        # 生成token对
+        access_token, refresh_token = create_token_pair(
+            user_id=user.id,
+            username=user.username,
+            is_superuser=user.is_superuser
+        )
+        data = JWTOut(
+            access_token=access_token,
+            refresh_token=refresh_token,
+            username=user.username,
+            expires_in=30 * 60,  # 30分钟
+        )
+        return CoreResponse(data=data.model_dump())
         
     @staticmethod
     @apply_rate_limit(rate="5/minute")

@@ -5,6 +5,7 @@
 # @Email: fzf54122@163.com
 # @Description: 角色管理视图集，处理角色的CRUD操作和权限管理
 
+import os
 from fastapi import APIRouter, Depends, Request, Body
 from fast_generic_api.generics import GenericAPIView,CustomViewSet
 from fast_generic_api.core.response import CoreResponse
@@ -35,7 +36,7 @@ class RoleViewSet(CustomViewSet,
     serializer_update_class = RoleUpdateSerializers
     pagination_class = LimitOffsetMaxDefaultPagination
     filter_class = RoleFilter
-    permissions = [DependPermisson]
+    permissions = [] if os.getenv('DISABLE_AUTH') == 'true' else [DependPermisson]
 
     def get_serializer_class(self):
         if self.action == 'create':
