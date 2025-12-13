@@ -76,10 +76,10 @@ test = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/fzf/auto-back-media"
-Repository = "https://github.com/fzf/auto-back-media.git"
-"Bug Tracker" = "https://github.com/fzf/auto-back-media/issues"
-"Source Code" = "https://github.com/fzf/auto-back-media"
+Homepage = "https://github.com/fzf54122/auto-back-media"
+Repository = "https://github.com/fzf54122/auto-back-media.git"
+"Bug Tracker" = "https://github.com/fzf54122/auto-back-media/issues"
+"Source Code" = "https://github.com/fzf54122/auto-back-media"
 "Template Source" = "https://github.com/JiayuXu0/FastAPI-Template"
 "Original Documentation" = "http://fastapi.infyai.cn/"
 

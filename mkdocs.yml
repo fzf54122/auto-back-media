@@ -1,12 +1,12 @@
 site_name: auto-back-media
 site_description: 自动化媒体发布后端项目
-site_author: fzf
-site_url: https://fzf.github.io/auto-back-media/
+site_author: fzf54122
+site_url: https://fzf54122.github.io/auto-back-media/
 copyright: Copyright &copy; 2024 fzf | Based on <a href="https://github.com/JiayuXu0/FastAPI-Template">FastAPI-Template</a> by <a href="https://github.com/JiayuXu0">@JiayuXu0</a>
 
 # Repository
-repo_name: fzf/auto-back-media
-repo_url: https://github.com/fzf/auto-back-media
+repo_name: fzf54122/auto-back-media
+repo_url: https://github.com/fzf54122/auto-back-media
 edit_uri: edit/main/docs/
 
 # Configuration
@@ -115,8 +115,8 @@ markdown_extensions:
   - pymdownx.caret
   - pymdownx.details
   - pymdownx.emoji:
-      emoji_generator: material.extensions.emoji.to_svg
-      emoji_index: material.extensions.emoji.twemoji
+      emoji_index: !!python/name:pymdownx.emoji.twemoji
+      emoji_generator: !!python/name:pymdownx.emoji.to_svg
   - pymdownx.highlight:
       anchor_linenums: true
       line_spans: __span
@@ -147,11 +147,21 @@ nav:
   - 架构设计: architecture/index.md
   - API 文档:
     - api/index.md
-    - 认证授权: api/base.md
-    - 用户管理: api/users.md
-    - 角色管理: api/role.md
-    - 文件管理: api/files.md
-    - API权限: api/api.md
+    - 基础模块:
+      - 认证授权: api/base.md
+      - 用户管理: api/users.md
+      - 角色管理: api/role.md
+      - 部门管理: api/dept.md
+      - 菜单管理: api/menu.md
+      - 文件管理: api/files.md
+      - 审计日志: api/audit_log.md
+      - API权限: api/api.md
+    - 管理模块:
+      - 媒体用户管理: api/media_user.md
+      - 任务管理: api/task_manage.md
+      - 网站管理: api/web.md
+    - 系统模块:
+      - 系统设置: api/settings.md
   - 更新日志: changelog.md
   - 常见问题: faq.md
 
