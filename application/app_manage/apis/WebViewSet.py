@@ -20,7 +20,7 @@ class WebViewSet(CustomViewSet,
                   GenericAPIView):
     """网站管理视图集"""
     router = router
-    prefix = "/web"
+    prefix = "/webs"
     queryset = WebModel
     filter_fields = []
     ordering = ["-created_at"]

@@ -4,7 +4,7 @@
 # @FileName: cache.py
 # @Email: fzf54122@163.com
 # @Description: 缓存功能实现
-
+import asyncio
 import json
 from collections.abc import Callable
 from functools import wraps
@@ -18,118 +18,131 @@ from commons.logger import logger
 
 
 class CacheManager:
-    """Redis缓存管理器"""
+    """Redis缓存管理器（稳定版）"""
 
     def __init__(self):
         self.redis: redis.Redis | None = None
-        self._connection_pool = None
+        self._lock = asyncio.Lock()
 
     async def connect(self):
-        """连接Redis"""
-        if self.redis is None:
+        """连接 Redis（带并发保护 + 超时）"""
+        if self.redis:
+            return self.redis
+
+        async with self._lock:
+            if self.redis:
+                return self.redis
+
             try:
                 self.redis = redis.from_url(
                     settings.REDIS_URL,
                     encoding="utf-8",
                     decode_responses=True,
                     max_connections=20,
-                    retry_on_timeout=True,
+
+                    # 🔥 必须
+                    socket_timeout=3,
+                    socket_connect_timeout=3,
+
+                    # 🚫 async 场景不推荐
+                    retry_on_timeout=False,
                 )
-                # 测试连接
-                await self.redis.ping()
-                logger.info("Redis连接成功")
+
+                # ping 也要保护
+                await asyncio.wait_for(self.redis.ping(), timeout=3)
+                logger.info("Redis 连接成功")
+
             except Exception as e:
-                logger.warning(f"Redis连接失败: {str(e)}，缓存功能将被禁用")
+                logger.warning(f"Redis 连接失败: {e}")
                 self.redis = None
 
+        return self.redis
+
     async def disconnect(self):
-        """断开Redis连接"""
         if self.redis:
             await self.redis.aclose()
             self.redis = None
-            logger.info("Redis连接已断开")
+            logger.info("Redis 已断开")
+
+    # ---------- 安全操作封装 ----------
 
     async def get(self, key: str) -> Any | None:
-        """获取缓存值"""
         if not self.redis:
             return None
 
         try:
-            data = await self.redis.get(key)
-            if data:
-                return json.loads(data)
-            return None
+            data = await asyncio.wait_for(self.redis.get(key), timeout=2)
+            return json.loads(data) if data else None
         except Exception as e:
-            logger.error(f"获取缓存失败 key={key}: {str(e)}")
+            logger.error(f"Redis get 失败 key={key}: {e}")
             return None
 
     async def set(self, key: str, value: Any, ttl: int | None = None) -> bool:
-        """设置缓存值"""
         if not self.redis:
             return False
 
         try:
             ttl = ttl or settings.CACHE_TTL
-            serialized_value = json.dumps(value, ensure_ascii=False, default=str)
-            await self.redis.setex(key, ttl, serialized_value)
+            data = json.dumps(value, ensure_ascii=False, default=str)
+
+            await asyncio.wait_for(
+                self.redis.setex(key, ttl, data),
+                timeout=2
+            )
             return True
+
         except Exception as e:
-            logger.error(f"设置缓存失败 key={key}: {str(e)}")
+            logger.error(f"Redis set 失败 key={key}: {e}")
             return False
 
     async def delete(self, key: str) -> bool:
-        """删除缓存"""
         if not self.redis:
             return False
 
         try:
-            result = await self.redis.delete(key)
+            result = await asyncio.wait_for(
+                self.redis.delete(key),
+                timeout=2
+            )
             return bool(result)
         except Exception as e:
-            logger.error(f"删除缓存失败 key={key}: {str(e)}")
+            logger.error(f"Redis delete 失败 key={key}: {e}")
             return False
 
     async def exists(self, key: str) -> bool:
-        """检查键是否存在"""
         if not self.redis:
             return False
 
         try:
-            result = await self.redis.exists(key)
+            result = await asyncio.wait_for(
+                self.redis.exists(key),
+                timeout=2
+            )
             return bool(result)
         except Exception as e:
-            logger.error(f"检查缓存存在性失败 key={key}: {str(e)}")
+            logger.error(f"Redis exists 失败 key={key}: {e}")
             return False
 
     async def clear_pattern(self, pattern: str) -> int:
-        """根据模式清除缓存"""
+        """安全删除（避免 KEYS 阻塞）"""
         if not self.redis:
             return 0
 
+        count = 0
         try:
-            keys = await self.redis.keys(pattern)
-            if keys:
-                return await self.redis.delete(*keys)
-            return 0
+            async for key in self.redis.scan_iter(match=pattern, count=100):
+                count += await self.redis.delete(key)
         except Exception as e:
-            logger.error(f"批量删除缓存失败 pattern={pattern}: {str(e)}")
-            return 0
+            logger.error(f"Redis 批量删除失败 pattern={pattern}: {e}")
+
+        return count
 
     def cache_key(self, prefix: str, *args, **kwargs) -> str:
-        """生成缓存键"""
-        key_parts = [prefix]
-
-        # 添加位置参数
-        if args:
-            key_parts.extend(str(arg) for arg in args)
-
-        # 添加关键字参数
-        if kwargs:
-            sorted_kwargs = sorted(kwargs.items())
-            key_parts.extend(f"{k}:{v}" for k, v in sorted_kwargs)
-
-        return ":".join(key_parts)
-
+        parts = [prefix]
+        parts.extend(map(str, args))
+        for k, v in sorted(kwargs.items()):
+            parts.append(f"{k}:{v}")
+        return ":".join(parts)
 
 # 全局缓存管理器实例
 cache_manager = CacheManager()

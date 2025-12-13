@@ -6,7 +6,7 @@
 # @Description: RoleSerializers数据验证模式定义
 
 from datetime import datetime
-from typing import List, Any
+from typing import List, Any, Optional
 from uuid import UUID
 from pydantic import Field
 from fast_generic_api.core.serializers import CoreSerializers
@@ -14,7 +14,7 @@ from fast_generic_api.core.serializers import CoreSerializers
 class RoleSerializers(CoreSerializers):
     uuid: UUID | None = None
     name: str | None = None
-    desc: str = ""
+    desc: Optional[str] = Field(default="", allow_none=True)
     is_active: bool = True
     menus: list | None = None       # 类型 list，None 默认
     apis: list | None = None

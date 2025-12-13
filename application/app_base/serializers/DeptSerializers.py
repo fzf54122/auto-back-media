@@ -7,6 +7,7 @@
 
 from uuid import UUID
 from pydantic import Field
+from typing import Optional
 from fast_generic_api.core.serializers import CoreSerializers
 
 
@@ -14,7 +15,7 @@ class DeptSerializers(CoreSerializers):
     """部门管理序列化器"""
     uuid:UUID = Field(..., description="部门ID")
     name: str = Field(..., description="部门名称", example="研发中心")
-    desc: str = Field("", description="备注", example="研发中心")
+    desc: Optional[str] = Field(default="", description="备注", example="研发中心", allow_none=True)
     order: int = Field(0, description="排序")
     parent_id: int = Field(0, description="父部门ID")
 
