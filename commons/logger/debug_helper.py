@@ -1,7 +1,9 @@
-"""
-调试助手工具
-用于在业务代码中添加详细的调试信息
-"""
+# -*- coding: utf-8 -*-
+# @Time    : 2025-12-13 11:57:20
+# @Author  : fzf54122
+# @FileName: debug_helper.py
+# @Email: fzf54122@163.com
+# @Description: 调试助手工具/用于在业务代码中添加详细的调试信息
 import inspect
 import json
 import traceback

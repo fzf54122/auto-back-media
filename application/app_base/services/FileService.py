@@ -1,12 +1,19 @@
+# -*- coding: utf-8 -*-
+# @Time    : 2025-12-13 11:57:20
+# @Author  : fzf54122
+# @FileName: FileService.py
+# @Email: fzf54122@163.com
+# @Description: FileService业务逻辑服务实现
+
 """文件服务层 - 统一文件处理业务逻辑"""
 
 import uuid
 from pathlib import Path
 
 from fastapi import HTTPException, UploadFile
+from fast_generic_api.core.response import CoreResponse
 
 from commons.logger import logger
-from commons.core.response import AutoResponse
 
 from application.app_base.models import FileModel
 
@@ -93,7 +100,7 @@ class FileService(CreateModelMixin):
         self.uploads_dir = Path(UPLOADS_DIR)
         self.uploads_dir.mkdir(exist_ok=True)
 
-    async def upload_file(self, file: UploadFile, user_id: int) -> AutoResponse:
+    async def upload_file(self, file: UploadFile, user_id: int) -> CoreResponse:
         """
         通用文件上传
 
@@ -138,7 +145,7 @@ class FileService(CreateModelMixin):
                 "file_path": str(file_path),
             }
 
-            return AutoResponse(
+            return Response(
                 data=response_data,
                 msg="文件上传成功",
             )

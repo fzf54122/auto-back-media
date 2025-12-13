@@ -1,8 +1,15 @@
+# -*- coding: utf-8 -*-
+# @Time    : 2025-12-13 11:57:20
+# @Author  : fzf54122
+# @FileName: jwt.py
+# @Email: fzf54122@163.com
+# @Description: JWT令牌处理功能实现
+
 from datetime import UTC, datetime, timedelta
 
 import jwt
 
-from application.app_system.schemas.LoginSchemas import JWTPayload
+from application.app_system.serializers.LoginSerializers import JWTPayload
 from conf import settings
 
 

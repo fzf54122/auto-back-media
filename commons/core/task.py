@@ -1,12 +1,17 @@
+# -*- coding: utf-8 -*-
+# @Time    : 2025-12-13 11:57:20
+# @Author  : fzf54122
+# @FileName: task.py
+# @Email: fzf54122@163.com
+# @Description: 描述文件功能
+
 from starlette.background import BackgroundTasks
 import contextvars
 
 from starlette.background import BackgroundTasks
 
 CTX_USER_ID: contextvars.ContextVar[int] = contextvars.ContextVar("user_id", default=0)
-CTX_BG_TASKS: contextvars.ContextVar[BackgroundTasks] = contextvars.ContextVar(
-    "bg_task", default=None
-)
+CTX_BG_TASKS: contextvars.ContextVar[BackgroundTasks] = contextvars.ContextVar("bg_task", default=None)
 
 
 class AutoTask:

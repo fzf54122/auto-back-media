@@ -1,19 +1,19 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# @Time    : 2025/10/27 21:38
-# @Author  : Administrator
-# @File    : api.py
-# @Project : auto-back-media
-# @email   : fzf54122@163.com
+# @Time    : 2025-12-13 11:57:20
+# @Author  : fzf54122
+# @FileName: ApiService.py
+# @Email: fzf54122@163.com
+# @Description: ApiService业务逻辑服务实现
+
 from fastapi.routing import APIRoute
 
 from commons.logger import logger
-from application.app_base.base import AutoService
+from commons.core.service import AutoService
 
 from application.app_base.models import ApiModel
-from application.app_base.schemas import (APISchemas,
-                                          APICreateSchemas,
-                                          APIUpdateSchemas)
+from application.app_base.serializers import (APISerializers,
+                                              APICreateSerializers,
+                                              APIUpdateSerializers)
 
 
 class ApiService(AutoService):

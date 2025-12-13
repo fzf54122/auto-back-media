@@ -1,15 +1,24 @@
+# -*- coding: utf-8 -*-
+# @Time    : 2025-12-13 11:57:20
+# @Author  : fzf54122
+# @FileName: UserService.py
+# @Email: fzf54122@163.com
+# @Description: UserService业务逻辑服务实现
+
 import secrets
 import string
 from datetime import datetime
 from typing import Optional
 
 from fastapi.exceptions import HTTPException
-from application.app_system.exceptions import OldPasswordErrorException, UpdateOtherUserPasswordException, UserNotFoundException
+from application.app_system.exceptions import (OldPasswordErrorException,
+                                               UpdateOtherUserPasswordException,
+                                               UserNotFoundException)
+from commons.core.service import AutoService
 from commons.core.password import get_password_hash, verify_password
 
-from application.app_base.base import AutoService
+
 from application.app_system.models.User import UserModel
-from application.app_system.schemas import UsersCreateSchemas,CredentialsSchema
 
 
 class UserService(AutoService):
@@ -22,7 +31,7 @@ class UserService(AutoService):
     async def get_by_username(self, username: str) -> UserModel | None:
         return await self.model.filter(username=username).first()
 
-    async def create_user(self, obj_in: UsersCreateSchemas) -> UserModel:
+    async def create_user(self, obj_in) -> UserModel:
         obj_in.password = get_password_hash(password=obj_in.password)
         obj = await self.model.create(**obj_in.model_dump())
         return obj
@@ -32,8 +41,8 @@ class UserService(AutoService):
         user.last_login = datetime.now()
         await user.save()
 
-    async def authenticate(self, credentials: CredentialsSchema) -> Optional["UserModel"]:
-        user = await self.model.filter(username=credentials.username).first()
+    async def authenticate(self, credentials) -> Optional["UserModel"]:
+        user : UserModel = await self.model.filter(username=credentials.username).first()
         if not user:
             raise HTTPException(status_code=400, detail="无效的用户名")
         verified = verify_password(credentials.password, user.password)
@@ -46,7 +55,7 @@ class UserService(AutoService):
 
     async def reset_password(self, user_id: int) -> str:
         """重置用户密码，返回新密码"""
-        user_obj = await self.get(id=user_id)
+        user_obj : UserModel = await self.model.get(id=user_id)
         if user_obj.is_superuser:
             raise HTTPException(status_code=403, detail="不允许重置超级管理员密码")
         # 生成安全的随机密码

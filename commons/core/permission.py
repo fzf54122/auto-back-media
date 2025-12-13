@@ -1,3 +1,10 @@
+# -*- coding: utf-8 -*-
+# @Time    : 2025-12-13 11:57:20
+# @Author  : fzf54122
+# @FileName: permission.py
+# @Email: fzf54122@163.com
+# @Description: 权限控制功能实现
+
 import re
 import secrets
 from typing import Optional

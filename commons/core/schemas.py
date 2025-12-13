@@ -1,3 +1,10 @@
+# -*- coding: utf-8 -*-
+# @Time    : 2025-12-13 11:57:20
+# @Author  : fzf54122
+# @FileName: serializers.py
+# @Email: fzf54122@163.com
+# @Description: schemas数据验证模式定义
+
 from typing import Any
 from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel

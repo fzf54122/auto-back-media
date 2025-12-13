@@ -1,34 +1,40 @@
-from fastapi import APIRouter, Request, Body
+# -*- coding: utf-8 -*-
+# @Time    : 2025-12-13 11:57:20
+# @Author  : fzf54122
+# @FileName: MenuViewSet.py
+# @Email: fzf54122@163.com
+# @Description: 菜单管理视图集，处理菜单的CRUD操作和树形结构构建
 
-from commons.core.response import AutoResponse
+from fastapi import APIRouter, Request, Body
+from fast_generic_api.generics import GenericAPIView,CustomViewSet
+from fast_generic_api.core.response import CoreResponse
+
 from commons.core.permission import DependPermisson
-from commons.drf import CustomViewSet,GenericViewSet
-from application.pagination import LimitOffsetMaxDefaultPagination
+
 from application.app_base.models import MenuModel
-from application.app_base.schemas import (MenuSchemas,
-                                          MenuSchemasCreate,
-                                          MenuSchemasUpdate)
+from application.app_base.serializers import (MenuSerializers,
+                                              MenuCreateSerializers,
+                                              MenuUpdateSerializers)
 
 router = APIRouter(tags=['菜单管理'])
 class MenuViewSet(CustomViewSet,
-                  GenericViewSet):
+                  GenericAPIView):
     """菜单管理视图集"""
     router = router
     prefix = "/menus"
-    model = MenuModel
+    queryset = MenuModel
     filter_fields = []
     ordering = ["-created_at"]
     loop_uuid_field = "uuid"
-    serializer_class = MenuSchemas           # ✅ 列表/详情默认序列化器
-    pagination_class = LimitOffsetMaxDefaultPagination
+    serializer_class = MenuSerializers           # ✅ 列表/详情默认序列化器
     filter_class = None
     permissions = [DependPermisson]
 
     def get_serializer_class(self):
-        if self.action == 'post':
-            return MenuSchemasCreate
+        if self.action == 'create':
+            return MenuCreateSerializers
         elif self.action == 'update':
-            return MenuSchemasUpdate
+            return MenuUpdateSerializers
         return super().get_serializer_class()
 
     def _build_menu_tree(self, menus):
@@ -57,12 +63,12 @@ class MenuViewSet(CustomViewSet,
 
         return root_menus
 
-    async def get(self,request: Request):
+    async def list(self,request: Request):
         """
         获取菜单列表，构建菜单树结构
         """
         # 获取所有菜单数据
-        qs = self.model.filter(is_deleted=False)
+        qs = self.queryset.filter(is_deleted=False)
 
         # 应用排序
         if self.ordering:
@@ -97,30 +103,30 @@ class MenuViewSet(CustomViewSet,
 
         # 序列化并返回
         serializer = self.get_serializer(menu_tree, many=True)
-        return AutoResponse(serializer)
+        return CoreResponse(serializer)
 
     async def retrieve(self, request: Request):
         """
         获取菜单详情
         """
-        self._request = request
+        self.request = request
         obj = await self.get_object()
         serializer = self.get_serializer(obj)
-        return AutoResponse(serializer)
+        return CoreResponse(serializer)
 
-    async def post(self,request: Request, data=Body(...)):
+    async def create(self,request: Request, data=Body(...)):
         """
-        创建角色
+        创建菜单
         """
-        obj = await self.model.create(**self.handle_data(data))
+        obj = await self.queryset.create(**self.serialize_input_data(data))
 
-        return AutoResponse(msg='创建成功', data={"id": obj.id})
+        return CoreResponse(msg='创建成功', data={"id": obj.id})
 
     async def update(self,request: Request, data=Body(...)):
         """
-        更新角色
+        更新菜单
         """
-        self._request = request
+        self.request = request
         obj = await self.get_object()
-        await obj.update_from_dict(self.handle_data(data)).save()
-        return AutoResponse(msg='更新成功', data={"id": obj.id})
+        await obj.update_from_dict(self.serialize_input_data(data)).save()
+        return CoreResponse(msg='更新成功', data={"id": obj.id})

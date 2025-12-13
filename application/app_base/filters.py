@@ -1,12 +1,19 @@
+# -*- coding: utf-8 -*-
+# @Time    : 2025-12-13 11:57:20
+# @Author  : fzf54122
+# @FileName: filters.py
+# @Email: fzf54122@163.com
+# @Description: 数据过滤类定义
+
 from tortoise.queryset import QuerySet
 from typing import Dict, Any, Callable
 
-from commons.core.filter import TortoiseFilterSet
+from fast_generic_api.core.filter import CoreFilterSet
 
 from application.app_base.models import RoleModel
 
 
-class RoleFilter(TortoiseFilterSet):
+class RoleFilter(CoreFilterSet):
     model = RoleModel
 
     filters = {

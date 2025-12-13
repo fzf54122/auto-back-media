@@ -1,10 +1,10 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# @Time    : 2025/10/30 21:18
-# @Author  : Administrator
-# @File    : TaskManageModle.py
-# @Project : auto-back-media
-# @email   : fzf54122@163.com
+# @Time    : 2025-12-13 11:57:20
+# @Author  : fzf54122
+# @FileName: TaskManage.py
+# @Email: fzf54122@163.com
+# @Description: TaskManage数据模型定义
+
 from tortoise import fields
 
 from application.app_manage.enums import TaskManageStatus

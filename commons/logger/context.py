@@ -1,13 +1,11 @@
-"""
-日志上下文管理器
-提供请求追踪和用户关联功能
-"""
-
+# -*- coding: utf-8 -*-
+# @Time    : 2025-12-13 11:57:20
+# @Author  : fzf54122
+# @FileName: context.py
+# @Email: fzf54122@163.com
+# @Description: 日志上下文管理器
 import uuid
 from contextvars import ContextVar
-
-# 延迟导入，避免循环导入
-# from log import logger
 
 # 上下文变量
 request_id_var: ContextVar[str] = ContextVar("request_id", default="-")

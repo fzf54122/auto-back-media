@@ -1,3 +1,9 @@
+# -*- coding: utf-8 -*-
+# @Time    : 2025-12-13 11:57:20
+# @Author  : fzf54122
+# @FileName: models.py
+# @Email: fzf54122@163.com
+# @Description: models数据模型定义
 
 import asyncio
 from uuid import uuid4
@@ -122,31 +128,35 @@ class CoreModel(models.Model):
         abstract = True
         verbose_name = '核心模型'
 
-    def delete(self, using=None, soft_delete=True, *args, **kwargs):
+    async def delete(self, soft_delete=True, *args, **kwargs):
         """
-        重写删除方法,直接开启软删除
+        重写删除方法，支持软删除和级联软删除
         """
         if soft_delete:
+            # 软删除当前对象
             self.is_deleted = True
-            self.save(using=using)
-            # 级联软删除关联对象
+            await self.save()  # 不要 using
+
+            # 处理关联对象的级联删除
             for related_object in self._meta.related_objects:
-                # 判断是否是级联删除, set_null, protected, do_nothing 在软删除均不需处理
                 on_delete = related_object.on_delete
-                print(f'soft delete obj {related_object} {on_delete}')
-                if not on_delete or on_delete != models.CASCADE:
-                    continue
-                related_model = getattr(self, related_object.get_accessor_name())
 
-                # 处理一对多和多对多的关联对象
+                # 只处理 CASCADE 关系
+                if on_delete != 'CASCADE':
+                    continue
+                # 获取反向关联管理器
+                related_manager = getattr(self, related_object.get_accessor_name())
+                # 一对多或多对多
                 if related_object.one_to_many or related_object.many_to_many:
-                    related_objects = related_model.all()
+                    related_objects = await related_manager.all()
+                    for obj in related_objects:
+                        await obj.delete(soft_delete=True)
+                # 一对一
                 elif related_object.one_to_one:
-                    related_objects = [related_model]
-                else:
-                    continue
-
-                for obj in related_objects:
-                    obj.delete(soft_delete=True)
+                    obj = await related_manager.first()
+                    if obj:
+                        await obj.delete(soft_delete=True)
         else:
-            super().delete(using=using, *args, **kwargs)
+            # 真正删除
+            await super().delete(*args, **kwargs)
+

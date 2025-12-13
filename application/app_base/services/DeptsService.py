@@ -1,12 +1,19 @@
+# -*- coding: utf-8 -*-
+# @Time    : 2025-12-13 11:57:20
+# @Author  : fzf54122
+# @FileName: DeptsService.py
+# @Email: fzf54122@163.com
+# @Description: DeptsService业务逻辑服务实现
+
 
 
 from application.app_base.models.Depts import DeptClosure
-from application.app_base.schemas import DeptsSchemas
+from application.app_base.serializers import DeptSerializers
 
 
 class DeptsService:
     
-    async def update_dept_closure(self, instance:DeptsSchemas):
+    async def update_dept_closure(self, instance):
         parent_depts = await DeptClosure.filter(descendant=instance.parent_id)
         
         dept_closure_objs: list[DeptClosure] = []

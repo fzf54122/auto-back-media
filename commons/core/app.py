@@ -1,3 +1,10 @@
+# -*- coding: utf-8 -*-
+# @Time    : 2025-12-13 11:57:20
+# @Author  : fzf54122
+# @FileName: app.py
+# @Email: fzf54122@163.com
+# @Description: 应用核心功能实现
+
 from functools import partial
 
 from aerich import Command
@@ -41,7 +48,7 @@ from application.app_base.models import (ApiModel,
 from application.app_base.enums import MenuType
 from application.app_base.services import ApiService
 from application.app_system.services import UserService
-from application.app_system.schemas import UsersCreateSchemas
+from application.app_system.serializers import UsersCreateSerializers
 
 api_service = ApiService()
 user_service = UserService()
@@ -91,7 +98,7 @@ async def init_superuser():
 
     if not user:
         await user_service.create_user(
-            UsersCreateSchemas(
+            UsersCreateSerializers(
                 username="admin",
                 email="admin@admin.com",
                 password="fzf991013",

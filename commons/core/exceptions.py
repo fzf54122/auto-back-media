@@ -1,11 +1,21 @@
+# -*- coding: utf-8 -*-
+# @Time    : 2025-12-13 11:57:20
+# @Author  : fzf54122
+# @FileName: exceptions.py
+# @Email: fzf54122@163.com
+# @Description: 自定义异常定义
+
 from fastapi import HTTPException, Request
 from fastapi.exceptions import RequestValidationError, ResponseValidationError
 from fastapi.responses import JSONResponse
+from fast_generic_api.core.exceptions import CoreException
+
+
 from starlette.responses import Response
 from tortoise.exceptions import DoesNotExist, IntegrityError
 from starlette.status import HTTP_500_INTERNAL_SERVER_ERROR
 import traceback
-from application.app_system.exceptions import AutoBaseException
+
 from conf import settings
 
 
@@ -72,7 +82,7 @@ async def ResponseValidationHandle(
 
 
 async def GlobalExceptionHandle(request: Request, exc: Exception):
-    if isinstance(exc, AutoBaseException):
+    if isinstance(exc, CoreException):
         return JSONResponse(
             status_code=400,
             content={
@@ -95,10 +105,10 @@ async def GlobalExceptionHandle(request: Request, exc: Exception):
     )
 
 
-class ObjectExistException(AutoBaseException):
+class ObjectExistException(CoreException):
     code = 20010
     detail = '对象已存在'
 
-class ObjectNotFoundException(AutoBaseException):
+class ObjectNotFoundException(CoreException):
     code = 20020
     detail = '没有找到对应对象'

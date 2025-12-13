@@ -1,10 +1,10 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# @Time    : 2025/10/26 21:36
-# @Author  : Administrator
-# @File    : SettingsModel.py
-# @Project : auto-back-media
-# @email   : fzf54122@163.com
+# @Time    : 2025-12-13 11:57:20
+# @Author  : fzf54122
+# @FileName: Settings.py
+# @Email: fzf54122@163.com
+# @Description: Settings数据模型定义
+
 from tortoise import fields
 
 from application.models import CoreModel,table_prefix
