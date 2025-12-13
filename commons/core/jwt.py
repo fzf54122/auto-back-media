@@ -49,7 +49,7 @@ def verify_token(token: str, token_type: str = "access") -> JWTPayload:
     """验证令牌并返回载荷"""
     try:
         token = token.strip()
-        if token.lower().startswith("bearer "):
+        if token.lower().startswith("Bearer "):
             token = token[7:]  # 去掉 "bearer "
         payload = jwt.decode(
             token, settings.SECRET_KEY, algorithms=[settings.JWT_ALGORITHM]

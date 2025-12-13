@@ -100,7 +100,7 @@ class FileService(CreateModelMixin):
         self.uploads_dir = Path(UPLOADS_DIR)
         self.uploads_dir.mkdir(exist_ok=True)
 
-    async def upload_file(self, file: UploadFile, user_id: int) -> CoreResponse:
+    async def upload_file(self, file: UploadFile, user_uuid: uuid.UUID) -> CoreResponse:
         """
         通用文件上传
 
@@ -133,7 +133,7 @@ class FileService(CreateModelMixin):
 
             # 保存文件映射信息
             await self._save_file_mapping(
-                {"file_id": file_id, "file_path": str(file_path)}, file, user_id
+                {"file_id": file_id, "file_path": str(file_path)}, file, user_uuid
             )
 
             # 返回文件信息
@@ -145,10 +145,7 @@ class FileService(CreateModelMixin):
                 "file_path": str(file_path),
             }
 
-            return Response(
-                data=response_data,
-                msg="文件上传成功",
-            )
+            return response_data
 
         except HTTPException:
             raise

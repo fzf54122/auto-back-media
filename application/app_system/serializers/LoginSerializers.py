@@ -21,7 +21,7 @@ class JWTOut(CoreSerializers):
     access_token: str
     refresh_token: str
     username: str
-    token_type: str = "bearer"
+    token_type: str = "Bearer"
     expires_in: int  # 过期时间（秒）
     user_uuid: Any = None
 

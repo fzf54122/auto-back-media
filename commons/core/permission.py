@@ -10,7 +10,7 @@ import secrets
 from typing import Optional
 import jwt
 from fastapi import Depends, HTTPException, Request, status
-from fastapi.security import HTTPBasic, HTTPBasicCredentials, HTTPBearer
+from fastapi.security import HTTPBasic, HTTPBasicCredentials, HTTPBearer, HTTPAuthorizationCredentials
 
 from .task import CTX_USER_ID
 from application.app_base.models import RoleModel
@@ -34,13 +34,17 @@ def get_current_username(credentials: HTTPBasicCredentials = Depends(security),)
 
 class AuthControl:
     @classmethod
-    async def is_authed(cls, token: str = Depends(bearer_scheme)) -> Optional["User"]:
+    async def is_authed(cls, token: str | HTTPAuthorizationCredentials = Depends(bearer_scheme)) -> Optional["User"]:
         try:
+
             # 直接使用 HTTPBearer 提供的 token (已经去掉了 Bearer 前缀)
             if not token:
                 raise HTTPException(status_code=401, detail="Missing authentication token")
-
-            decode_data = jwt.decode(token.credentials,
+            if isinstance(token, HTTPAuthorizationCredentials):
+                token_str = token.credentials
+            else:
+                token_str = token
+            decode_data = jwt.decode(token_str,
                                      settings.SECRET_KEY,
                                      algorithms=settings.JWT_ALGORITHM,)
             user_id = decode_data.get("user_id")
@@ -71,7 +75,7 @@ class PermissionControl:
             HTTPException: 当用户无权限时抛出403错误
         """
         if current_user.is_superuser:
-            return
+            return current_user
 
         method = request.method
         path = request.url.path
@@ -92,7 +96,7 @@ class PermissionControl:
                 pattern = re.sub(r"\{[^}]+\}", r"[^/]+", perm_path)
                 pattern = f"^{pattern}$"
                 if re.match(pattern, path):
-                    return
+                    return current_user
 
         raise HTTPException(status_code=403,detail=f"Permission denied method:{method} path:{path}",)
 

@@ -13,7 +13,7 @@ class UserModel(CoreModel):
     """用户表"""
     username = fields.CharField(max_length=20, unique=True, description="用户名称")
     alias = fields.CharField(max_length=30, null=True, description="姓名")
-    email = fields.CharField(max_length=255, unique=True, description="邮箱")
+    email = fields.CharField(max_length=255,null=True, description="邮箱")
     phone = fields.CharField(max_length=20, null=True, description="电话")
     password = fields.CharField(max_length=128, null=True, description="密码")
     is_active = fields.BooleanField(default=True, description="是否激活")

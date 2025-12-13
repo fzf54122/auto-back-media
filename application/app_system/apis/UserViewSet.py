@@ -10,7 +10,7 @@ from fast_generic_api.generics import GenericAPIView,CustomViewSet
 from fast_generic_api.core.response import CoreResponse
 
 
-from commons.core.permission import DependPermisson, get_current_username
+from commons.core.permission import DependPermisson
 
 from application.pagination import LimitOffsetMaxDefaultPagination
 from application.app_system.models import UserModel
@@ -42,10 +42,11 @@ class UserViewSet(CustomViewSet,
         elif self.action == 'update':
             return UsersUpdateSerializers
         return super().get_serializer_class()
-    
+
+    @staticmethod
     @router.post('/{uuid}/update_password/', summary='修改用户密码')
-    async def update_user_password(self, uuid: str, password_data: UsersUpdatePasswordSerializers,
-                                   current_user=Depends(get_current_username)):
+    async def update_user_password(uuid: str, password_data: UsersUpdatePasswordSerializers,
+                                   current_user:UserModel=DependPermisson):
         """修改用户密码"""
         data = {'uuid':uuid,'current_user':current_user,
                 'password_data':password_data}

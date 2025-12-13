@@ -14,13 +14,9 @@ from application.app_base.services import FileService
 
 router = APIRouter(tags=['上传文件'])
 service = FileService()
-class FilesViewSet(CreateViewSet):
-    router = router
-    prefix = "/upload"
-    permissions = [DependPermisson]
 
-    async def create(self, file: UploadFile = File(..., description="要上传的文件")):
+@router.post('/upload/', status_code=201, summary='上传文件')
+async def create(file: UploadFile = File(..., description="要上传的文件"),current_user=DependPermisson):
         """上传文件"""
-        
-        result = await service.upload_file(file)
-        return CoreResponse(result.body)
+        result = await service.upload_file(file, current_user.uuid)
+        return CoreResponse(result)

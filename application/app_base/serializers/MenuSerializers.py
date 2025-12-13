@@ -13,7 +13,7 @@ from fast_generic_api.core.serializers import CoreSerializers
 
 
 class MenuSerializers(CoreSerializers):
-    id: int = None
+    # id: int = None
     uuid: UUID = None
     name: str = None
     path: str = "/menu"

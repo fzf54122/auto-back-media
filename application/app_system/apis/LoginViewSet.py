@@ -79,7 +79,7 @@ class LoginViewSet:
             await cache_manager.set(
                 f"blacklist_token:{token}",
                 "logged_out",
-                ttl=30*60
+                ttl=60 * 60 * 24  # 24小时
             )
 
             # 删除 refresh_token
@@ -130,8 +130,8 @@ class LoginViewSet:
             return CoreResponse(TokenRefreshOut(
                 access_token=new_access_token,
                 refresh_token=new_refresh_token,
-                token_type="bearer",
-                expires_in=30 * 60  # 30分钟
+                token_type="Bearer",
+                expires_in=60 * 60 * 24  # 24小时
             ))
             
         except Exception as e:

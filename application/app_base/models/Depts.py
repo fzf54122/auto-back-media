@@ -19,6 +19,19 @@ class DeptsModel(CoreModel):
         table = table_prefix + "depts"
 
 class DeptClosure(CoreModel):
-    ancestor = fields.IntField(description="父代", index=True)
-    descendant = fields.IntField(description="子代", index=True)
+    ancestor = fields.ForeignKeyField(
+        "models.DeptsModel",
+        related_name="ancestor_links",
+        on_delete=fields.CASCADE,
+        null=True
+    )
+    descendant = fields.ForeignKeyField(
+        "models.DeptsModel",
+        related_name="descendant_links",
+        on_delete=fields.CASCADE,
+        null=True
+    )
     level = fields.IntField(default=0, description="深度", index=True)
+
+    class Meta:
+        table = table_prefix + "dept_closure"

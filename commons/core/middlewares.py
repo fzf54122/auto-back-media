@@ -218,8 +218,15 @@ class HttpAuditLogMiddleware(BaseHTTPMiddleware):
                 data["summary"] = route.summary
         # 获取用户信息
         try:
-            token = request.headers.get("token")
+            auth_header = request.headers.get("authorization")  # 注意这里
             user_obj = None
+            token = None
+
+            if auth_header:
+                if auth_header.lower().startswith("bearer "):
+                    token = auth_header[7:]  # 去掉 "Bearer " 前缀
+                else:
+                    token = auth_header
             if token:
                 user_obj: UserModel = await AuthControl.is_authed(token)
             data["user_id"] = user_obj.id if user_obj else 0
@@ -272,7 +279,6 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
     ) -> Response:
         """处理请求并记录日志"""
         start_time = datetime.now()
-
         # 记录请求开始
         logger.info(
             f"请求开始: {request.method} {request.url.path}",
