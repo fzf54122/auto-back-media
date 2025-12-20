@@ -7,9 +7,12 @@
 
 import re
 from datetime import datetime
+from typing import Any
 from uuid import UUID
 from pydantic import EmailStr, Field, field_validator
 from fast_generic_api.core.serializers import CoreSerializers
+
+
 
 class UsersSerializers(CoreSerializers):
     uuid: UUID = None
@@ -21,9 +24,9 @@ class UsersSerializers(CoreSerializers):
     is_superuser: bool | None = False
     is_deleted: bool | None = False
     created_at: datetime | None = None
+    role_ids: list[int]  | None = None
     updated_at: datetime | None = None
     last_login: datetime | None = None
-
 
 class UsersCreateSerializers(CoreSerializers):
         email: str = Field(..., json_schema_extra={'example': "admin@qq.com"})

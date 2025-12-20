@@ -19,7 +19,7 @@ class UserModel(CoreModel):
     is_active = fields.BooleanField(default=True, description="是否激活")
     is_deleted = fields.BooleanField(default=False, description="软删除标记")
     is_superuser = fields.BooleanField(default=False, description="是否为超级管理员")
-    roles = fields.ManyToManyField("models.RoleModel", related_name="user_roles")
+    roles = fields.ManyToManyField("models.RoleModel", related_name="users")
     last_login = fields.DatetimeField(null=True, description="最后登录时间")
 
     class Meta:

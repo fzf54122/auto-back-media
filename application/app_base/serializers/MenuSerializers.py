@@ -15,19 +15,20 @@ from fast_generic_api.core.serializers import CoreSerializers
 class MenuSerializers(CoreSerializers):
     # id: int = None
     uuid: UUID = None
-    name: str = None
-    path: str = "/menu"
-    ordering: list[str] = None
+    name: str | None = None
+    path: str | None = "/menu"
+    ordering: list[str]|None = None
     remark: dict | None = None
     menu_type: MenuType | None = None
     icon: str | None = None
-    order: int = 0
-    parent_id: int = 0
-    is_hidden: bool = False
-    component: str = None
-    keepalive: bool = False
+    order: int | None = 0
+    parent_id: int | None = 0
+    is_hidden: bool | None = False
+    component: str | None = None
+    keepalive: bool | None = False
     redirect: str | None = None
     children: list["MenuSerializers"] | None = None
+    updated_at: str | None = None
 
 class MenuCreateSerializers(MenuSerializers):
     menu_type: MenuType = Field(default=MenuType.CATALOG.value)

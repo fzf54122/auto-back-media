@@ -36,3 +36,21 @@ class MenuViewSet(CustomViewSet,
         elif self.action == 'update':
             return MenuUpdateSerializers
         return super().get_serializer_class()
+
+    async def list(self, request: Request):
+        """获取菜单列表"""
+        qs = self.filter_queryset(await self.get_queryset())
+
+        async def build_tree(items, parent_id=0):
+            tree = []
+            for item in items:
+                if item.parent_id == parent_id:
+                    item_dict = await item.to_dict()  # 转成 dict
+                    # 递归生成子菜单
+                    item_dict['children'] = await build_tree(items, item.id)
+                    tree.append(item_dict)
+            return tree
+
+        tree = await build_tree(qs)
+        data = await self.get_serializer(tree, many=True)
+        return CoreResponse(data=data)
