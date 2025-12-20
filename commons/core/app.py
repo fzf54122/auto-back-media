@@ -106,6 +106,7 @@ async def init_superuser():
                 phone="13800138000",
                 is_active=True,
                 is_superuser=True,
+                role_ids=[1],
             )
         )
         logger.info("✅ 超级管理员用户创建成功 - 用户名: admin")
@@ -293,10 +294,10 @@ async def init_data():
     await init_db()
     logger.info("✅ 数据库初始化完成")
 
-    await init_superuser()
     await init_menus()
     await init_apis()
     await init_roles()
+    await init_superuser()
 
     logger.info("🎉 系统初始化完成！")
     logger.info("#"*40)

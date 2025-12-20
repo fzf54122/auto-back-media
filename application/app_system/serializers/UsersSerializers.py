@@ -24,7 +24,7 @@ class UsersSerializers(CoreSerializers):
     is_superuser: bool | None = False
     is_deleted: bool | None = False
     created_at: datetime | None = None
-    role_ids: list[int]  | None = None
+    roles: list[int]  | None = None
     updated_at: datetime | None = None
     last_login: datetime | None = None
 
@@ -48,7 +48,7 @@ class UsersCreateSerializers(CoreSerializers):
         phone: str | None = Field(None, description="电话", json_schema_extra={'example': "13800138000"})
         is_active: bool | None = True
         is_superuser: bool | None = False
-
+        roles: list[int] | None = None
         @field_validator("password")
         @classmethod
         def validate_password_strength(cls, v):

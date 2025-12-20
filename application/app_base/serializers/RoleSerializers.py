@@ -12,7 +12,7 @@ from pydantic import Field
 from fast_generic_api.core.serializers import CoreSerializers
 
 class RoleSerializers(CoreSerializers):
-    uuid: UUID | None = None
+    id: int | None = None
     name: str | None = None
     desc: Optional[str] = Field(default="", allow_none=True)
     is_active: bool = True
