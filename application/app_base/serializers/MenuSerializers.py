@@ -13,7 +13,7 @@ from fast_generic_api.core.serializers import CoreSerializers
 
 
 class MenuSerializers(CoreSerializers):
-    # id: int = None
+    id: int = None
     uuid: UUID = None
     name: str | None = None
     path: str | None = "/menu"
@@ -28,6 +28,7 @@ class MenuSerializers(CoreSerializers):
     keepalive: bool | None = False
     redirect: str | None = None
     children: list["MenuSerializers"] | None = None
+    is_active: bool | None = False
     updated_at: str | None = None
 
 class MenuCreateSerializers(MenuSerializers):

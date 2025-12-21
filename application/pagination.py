@@ -17,7 +17,7 @@ class LimitOffsetMax2000Pagination(CorePagination):
 
 
 class LimitOffsetMaxDefaultPagination(CorePagination):
-    max_limit = 10
+    max_limit = 20
 
 class LimitOffsetMax1tPagination(CorePagination):
     max_limit = 1

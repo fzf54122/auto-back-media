@@ -13,11 +13,15 @@ from fast_generic_api.core.serializers import CoreSerializers
 
 class DeptSerializers(CoreSerializers):
     """部门管理序列化器"""
+    id : int
     uuid:UUID = Field(..., description="部门ID")
     name: str = Field(..., description="部门名称", example="研发中心")
     desc: Optional[str] = Field(default="", description="备注", example="研发中心", allow_none=True)
     order: int = Field(0, description="排序")
     parent_id: int = Field(0, description="父部门ID")
+    is_active:bool |None = None
+    created_at:str = None
+    updated_at:str = None
 
 class DeptCreateSerializers(DeptSerializers):
     """部门管理创建序列化器"""

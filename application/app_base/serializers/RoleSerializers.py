@@ -13,6 +13,7 @@ from fast_generic_api.core.serializers import CoreSerializers
 
 class RoleSerializers(CoreSerializers):
     id: int | None = None
+    uuid: UUID | None = None
     name: str | None = None
     desc: Optional[str] = Field(default="", allow_none=True)
     is_active: bool = True

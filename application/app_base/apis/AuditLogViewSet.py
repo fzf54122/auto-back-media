@@ -11,6 +11,7 @@ from fast_generic_api.generics import ListViewSet
 from commons.core.permission import DependPermisson
 
 from application.pagination import LimitOffsetMaxDefaultPagination
+from application.app_base.filters import AuditLogFilter
 from application.app_base.models import AuditLogModel
 from application.app_base.serializers import (AuditLogSerializers, )
 
@@ -25,5 +26,5 @@ class AuditLogViewSet(ListViewSet,):
     loop_uuid_field = "uuid"
     serializer_class = AuditLogSerializers           # ✅ 列表/详情默认序列化器
     pagination_class = LimitOffsetMaxDefaultPagination
-    filter_class = None
+    filter_class = AuditLogFilter
     permissions = [DependPermisson]

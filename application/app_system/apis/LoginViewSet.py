@@ -187,7 +187,7 @@ class LoginViewSet:
                     raise UserNotFoundException
                     
                 # 将用户信息转换为schema格式返回
-                user_data = UsersSerializers.model_validate(user)
+                user_data = await UsersSerializers.from_tortoise(user)
                 
                 return CoreResponse(data=user_data)
                 

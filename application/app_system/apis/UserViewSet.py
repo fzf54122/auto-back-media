@@ -9,7 +9,7 @@ from fastapi import APIRouter, Depends
 from fast_generic_api.generics import GenericAPIView,CustomViewSet
 from fast_generic_api.core.response import CoreResponse
 
-
+from application.app_system.filters import UserFilter
 from commons.core.permission import DependPermisson
 
 from application.pagination import LimitOffsetMaxDefaultPagination
@@ -33,7 +33,7 @@ class UserViewSet(CustomViewSet,
     loop_uuid_field = "uuid"
     serializer_class = UsersSerializers           # ✅ 列表/详情默认序列化器
     pagination_class = LimitOffsetMaxDefaultPagination
-    filter_class = None
+    filter_class = UserFilter
     permissions = [DependPermisson]
 
     def get_serializer_class(self):
