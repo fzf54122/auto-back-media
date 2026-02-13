@@ -16,6 +16,7 @@ class AuditLogModel(CoreModel):
     summary = fields.CharField(max_length=128, null=True, description="请求描述")
     method = fields.CharField(max_length=10, null=True, description="请求方法")
     path = fields.CharField(max_length=255, null=True, description="请求路径")
+    host = fields.CharField(max_length=32,null=True,description='请求IP地址')
     status = fields.IntField(null=True, description="状态码")
     response_time = fields.IntField(null=True, description="响应时间(单位ms)")
     request_args = fields.JSONField(null=True, description="请求参数")

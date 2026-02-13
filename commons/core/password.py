@@ -4,8 +4,8 @@
 # @FileName: password.py
 # @Email: fzf54122@163.com
 # @Description: 描述文件功能
-
-from passlib import pwd
+import string
+import secrets
 from passlib.context import CryptContext
 
 pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
@@ -19,5 +19,6 @@ def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)
 
 
-def generate_password() -> str:
-    return pwd.genword()
+def generate_password(length: int = 12) -> str:
+    alphabet = string.ascii_letters + string.digits
+    return "".join(secrets.choice(alphabet) for _ in range(length))

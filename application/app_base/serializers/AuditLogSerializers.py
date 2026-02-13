@@ -21,3 +21,4 @@ class AuditLogSerializers(CoreSerializers):
     response_time: float | None = None
     ip: str | None = None
     created_at: datetime | None = None
+    host: str | None = None

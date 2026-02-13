@@ -205,6 +205,7 @@ class HttpAuditLogMiddleware(BaseHTTPMiddleware):
             "path": request.url.path,
             "status": response.status_code,
             "method": request.method,
+            "host": request.client.host,
         }
         # 路由信息
         app: FastAPI = request.app
